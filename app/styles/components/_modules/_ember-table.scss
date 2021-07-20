@@ -16,7 +16,7 @@
 }
 
 .ember-table-header-row, .ember-table-header-container .ember-table-table-fixed-wrapper {
-  background: $colorGrayLight;
+  background: $colorSecondary;
   cursor: default;
 }
 
@@ -73,15 +73,16 @@
 
 .ember-table-cell {
   cursor: default;
-  border-right: 1px solid $colorWhite;
-  &:last-of-type {
-    border-right: none;
-  }
+  border: none;
 }
 
 .ember-table-table-row {
-  border-bottom: 1px solid $colorWhite;
+  border-bottom:none;
   cursor: default;
+}
+
+.ember-table-table-row:nth-of-type(2n+1) {
+  background-color: aqua;
 }
 
 .ember-table-hover {
