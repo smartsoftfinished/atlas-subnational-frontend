@@ -13,7 +13,7 @@
 
         <div class="mt-4">
           <i class="fa fa-arrow-right" aria-hidden="true"></i>
-          {{#link-to 'agproduct.visualization' model.id 'departments' 'geo' 'land_sown' (query-params startDate=lastYear endDate=lastYear search='null')
+          {{#link-to 'agproduct.visualization' model.id 'departments' 'geo' 'land_sown,production_tons,land_harvested' (query-params startDate=lastYear endDate=lastYear search='null')
             class="builder__questions__question"
           }}
             {{t 'graph_builder.page_title.agproduct.departments.land_sown'}}

@@ -406,11 +406,11 @@ export default Ember.Controller.extend({
     }
   }),
   maxValue: computed('filteredData.[]', 'varDependent', function () {
-    let varDependent = this.get('varDependent');
+    let varDependent  = this.get('varDependent').split(',')[0];
     return d3.max(this.get('filteredData'), function(d) { return Ember.get(d, varDependent); });
   }),
   scale: computed('maxValue', 'varDependent', function(){
-    let varDependent = this.get('varDependent');
+    let varDependent  = this.get('varDependent').split(',')[0];
     if(_.isUndefined(varDependent)){
       return d3.scale.quantize()
         .range(d3.range(5).map(function(i) { return 'q' + i + '-5'; }));
