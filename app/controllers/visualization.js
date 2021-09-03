@@ -454,6 +454,7 @@ export default Ember.Controller.extend({
         return _.filter(data, (d) => { return _.get(d,rca) > 1;});
       }
     }
+    this.set('filteredMapData', data);
     return data;
   }),
   visualizationComponent: computed('visualization', function(){
@@ -554,6 +555,24 @@ export default Ember.Controller.extend({
   },
   scrollTopWhenUpdate: observer('variable', function() {
     window.scrollTo(0,0);
+  }),
+  filteredMapData: null,
+  selectData: computed('filteredData.[]', 'varDependent',function () {
+    var self = this
+    return function (start, end) {
+      let selectedData = self.get('filteredData');;
+      if (end) {
+        selectedData = _.filter(selectedData, (d) => {
+          return _.get(d, self.get('varDependent')) <= end;
+        });
+      }
+      if (start) {
+        selectedData = _.filter(selectedData, (d) => {
+          return _.get(d, self.get('varDependent')) >= start;
+        });
+      }
+      self.set('filteredMapData', selectedData);
+    }
   }),
   actions: {
     resetSearch: function() {

@@ -94,8 +94,6 @@ export default Ember.Component.extend({
   toolTipsData: computed('toolTips', function (){
     let toolTips = this.get('toolTips');
     let varDependent = this.get('varDependent');
-
-
     if(toolTips==null){
       return [varDependent];
     }
@@ -109,11 +107,8 @@ export default Ember.Component.extend({
   valueMap: computed('data.[]', 'varDependent', 'toolTips', function() {
     let valueMap = d3.map();
     let data = this.get('data');
-
     let toolTipsData = this.get('toolTipsData');
-
     let quantize = this.get("scale");
-
     let nestByDepartmentId = d3.nest()
       .key(function(d) { return Ember.get(d,'department_id'); })
       .entries(data);

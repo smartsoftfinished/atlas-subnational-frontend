@@ -65,7 +65,7 @@
             classNames='buildermod__viz'
             immutableData=immutableData
             modelData=modelData
-            data=filteredData
+            data=filteredMapData
             dataType=source
             varDependent=varDependent
             scale=scale
@@ -89,7 +89,7 @@
           {{#unless isGeo }}
               {{component 'visualization-legend' legend=legend }}
           {{else}}
-              {{component 'visualization-legend-geomap' legend=geoLegend varDependent=varDependent classNames='col-md-4 d-flex flex-column justify-content-around' }}
+              {{component 'visualization-legend-geomap' legend=geoLegend varDependent=varDependent filterData=selectData classNames='col-md-4 d-flex flex-column justify-content-around' }}
           {{/unless}}
         {{/if}}
 
@@ -105,7 +105,7 @@
 
         {{
           datlas-table
-          data=filteredData
+          data=filteredMapData
           source=source
           entityType=entityType
           search=search

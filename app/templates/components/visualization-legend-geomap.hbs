@@ -2,8 +2,8 @@
   <div class="col-lg-12 mb-5">
     <h4 class="title_yellow">{{t varDependent}}</h4>
   </div>
-	{{#each key in legend}}
-		<div class="col-sm-12 text-white">
+	{{#each key in staticLegend}}
+		<div class="col-sm-12 text-white" {{action 'filterByKey' key.start key.end}} role="button" class="btn-outline-secondary">
             <i class="fa fa-circle" class={{key.class}}></i> {{key.start}} - {{key.end}}
 	  	</div>
 	{{else}}
