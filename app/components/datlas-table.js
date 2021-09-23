@@ -454,8 +454,8 @@ export default Ember.Component.extend(TableMap, {
     if(updatedData.length === 0){
       order = [[ 0, "desc" ]];
     }
-
-
+    const decimalRegex = /^\d*(\.\d{1,2})$/g;
+    const numericRegex = /(\.*){2,}/g;
     var table = $(id_element).DataTable({
       dom: 'Bfrtip',
       lengthChange: false,
@@ -468,6 +468,23 @@ export default Ember.Component.extend(TableMap, {
           text: export_data_text,
           attr: {class: 'btn btn-outline-secondary' },
           extend: "excelHtml5",
+          exportOptions: {
+            format: {
+              body: function ( data, row, column, node ) {
+                let result = "";
+                if (decimalRegex.test(data)){
+                  result = data;
+                }else if (numericRegex.test(data)) {
+                  result = `${data}`.replace(/[\.]/g, '');
+                } else {
+                  result = data;
+                }
+                console.log(result);
+
+                return result;
+              }
+            }
+          },
           filename: function() {
             var d = new Date();
             return d.getDate()  + "-" + (d.getMonth()+1) + "-" + d.getFullYear() + " " + d.getHours() + "_" + d.getMinutes() + "_" + d.getSeconds();
@@ -494,9 +511,7 @@ export default Ember.Component.extend(TableMap, {
         } else if (source === 'agproduct') {
           self.sendAction('transitionAgproduct', id);
         }
-
       }
-
     });
   }),
   didInsertElement: function() {
