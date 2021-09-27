@@ -12,20 +12,18 @@ export default Ember.Route.extend({
   buildermodSearchService: Ember.inject.service(),
   firstYear: computed.alias('featureToggle.first_year'),
   lastYear: computed.alias('featureToggle.last_year'),
-  product_id: null,
 
   queryParams: {
     startDate: { refreshModel: false },
     endDate: { refreshModel: false },
+    lastSelected: { refreshModel: false },
   },
 
   model(params) {
-    let {product_id} = params;
-    set(this, 'product_id', product_id);
 
     let hash = {
-      model: this.store.find('product', product_id),
-      products_col: $.getJSON(`${apiURL}/data/location/0/products?level=4digit`),
+      model: this.store.find('location', params.location_id),
+      products_col: $.getJSON(`${apiURL}/data/location/${params.location_id}/products?level=4digit`),
     }
 
     return RSVP.hash(hash).then((hash) => {
@@ -59,6 +57,7 @@ export default Ember.Route.extend({
     window.scrollTo(0, 0);
   },
   resetController(controller, isExiting) {
+
     if (isExiting) {
       controller.setProperties({
       });

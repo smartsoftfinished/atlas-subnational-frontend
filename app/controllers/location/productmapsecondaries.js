@@ -9,6 +9,7 @@ export default Ember.Controller.extend({
   buildermodSearchService: Ember.inject.service(),
   departmentCityFilterService: Ember.inject.service(),
   vistkNetworkService: Ember.inject.service(),
+  locationsSelectionsService: Ember.inject.service(),
   queryParams: ['startDate', 'endDate'],
   categoriesFilterList: [],
   elementId: 'product_space',
@@ -117,17 +118,31 @@ export default Ember.Controller.extend({
     var id = this.get("model.entity.id")
     var selected_products = {}
 
-    selected_products[id] = this.getPrimariesSecondaries2(parseInt(id))
-
     return selected_products
   }),
-  selectedProducts: computed('model.[]', function () {
-    return this.get("initialSelectedProducts");
+  selectedProducts: computed.alias('locationsSelectionsService.selectedProducts'),
+
+  enableRingChart: "disabled",
+  lastSelected: null,
+
+  enableRingChartObserver: observer("vistkNetworkService.updated", function () {
+
+    var selectedProducts = Object.keys(this.get("selectedProducts"));
+    //console.log(selectedProducts)
+
+    if (selectedProducts.length > 0){
+      var lastSelected = selectedProducts[selectedProducts.length - 1]
+      this.set("lastSelected", lastSelected)
+      this.set("enableRingChart", "")
+    }
+    else {
+      this.set("lastSelected", null)
+      this.set("enableRingChart", "disabled")
+    }
+
   }),
 
   searchFilter: observer('buildermodSearchService.search', function() {
-
-
 
     var data = this.get("model.metaData.products");
     var selected = this.get("selectedProducts");
@@ -136,16 +151,17 @@ export default Ember.Controller.extend({
     var elementId = this.get("elementId");
     var initialSelectedProducts = this.get("initialSelectedProducts")
 
-    if(search === ""){
+    if(search == ""){
 
       var id_principal = this.get("model.entity.id");
 
 
       d3.selectAll(".tooltip_network").classed("d-none", true);
-      d3.selectAll(`.tooltip_${id_principal}_${elementId}`).classed("d-none", false);
+      //d3.selectAll(`.tooltip_${id_principal}_${elementId}`).classed("d-none", false);
 
       this.set("selectedProducts", initialSelectedProducts);
       this.set('vistkNetworkService.updated', new Date());
+
     }
     else {
       var regexp = new RegExp(search.replace(/(\S+)/g, function(s) { return "\\b(" + s + ")(.*)"; })
@@ -170,10 +186,30 @@ export default Ember.Controller.extend({
 
       result.map(item => {
         //selected.push(String(item.id))
-        selected[String(item.id)] = this.getPrimariesSecondaries2(parseInt(item.id))
-        self.set('vistkNetworkService.updated', new Date());
+        selected[String(item.id)] = self.getPrimariesSecondaries2(parseInt(item.id))
         d3.selectAll(`.tooltip_${item.id}_${elementId}`).classed('d-none', false);
       });
+
+      self.set('vistkNetworkService.updated', new Date());
+
+      for(let id of Object.keys(selected)){
+        for(let id2 of Object.keys(selected[id])){
+          setTimeout(function(){
+            d3.selectAll(`.connected_${id}_${id2}`).classed("selected", true)
+            d3.selectAll(`.connected_${id2}_${id}`).classed("selected", true)
+          }, 2000)
+
+          for(let id3 of selected[id][id2]){
+            setTimeout(function(){
+              d3.selectAll(`.connected_${id2}_${id3}`).classed("selected__secondary", true)
+              d3.selectAll(`.connected_${id3}_${id2}`).classed("selected__secondary", true)
+            }, 2000)
+          }
+
+        }
+
+     }
+
     }
 
   }),
@@ -189,15 +225,42 @@ export default Ember.Controller.extend({
     this.get('buildermodSearchService.search')
     return this.get("departmentCityFilterService.name");
   }),
-  locationId: computed("departmentCityFilterService.id", function (){
-    return this.get("departmentCityFilterService.id");
+
+  departmentsDataSelect: computed("model", function () {
+
+    this.set("selectedProducts", this.get("initialSelectedProducts"))
+
+    var all_locations = Object.values(this.get("model.metaData.locations"))
+
+    var locations = all_locations.filter(item => item.level === "department").map( (item) => {
+      var chained = all_locations.filter(item2 => item.id === item2.parent_id).map(item => ({'id': item.id, 'text': `${item.name_es} (${item.code})`}))
+      return {'id': item.id, 'text': `${item.name_es} (${item.code})`, 'chained': chained}
+    })
+    return locations
   }),
 
   filteredDataTable: computed("model", 'vistkNetworkService.updated', 'departmentCityFilterService.data', 'endDate', function () {
 
     var selectedProducts = this.get("selectedProducts")
+
+    var ids = []
+
+    for(let id of Object.keys(selectedProducts)){
+      ids.push(id)
+
+      for(let id2 of Object.keys(selectedProducts[id])){
+        ids.push(id2)
+
+        for(let id3 of selectedProducts[id][id2]){
+          ids.push(id3)
+        }
+
+      }
+
+    }
+
     var productsData = this.get("productsData")
-    var result = productsData.filter(item => Object.keys(selectedProducts).includes(String(item.id)))
+    var result = productsData.filter(item => ids.includes(String(item.id)))
 
     return result
   }),
@@ -288,6 +351,7 @@ export default Ember.Controller.extend({
   exportDataLocations: computed('model.data', 'startDate', function (){
     return this.get("model.locationsData").filter(item => item.year === this.get("startDate"));
   }),
+
 });
 
 

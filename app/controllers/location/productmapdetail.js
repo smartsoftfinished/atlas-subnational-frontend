@@ -9,13 +9,17 @@ export default Ember.Controller.extend({
   buildermodSearchService: Ember.inject.service(),
   departmentCityFilterService: Ember.inject.service(),
   vistkNetworkService: Ember.inject.service(),
+  locationsSelectionsService: Ember.inject.service(),
   queryParams: ['startDate', 'endDate'],
+
   categoriesFilterList: [],
   elementId: 'product_space',
   VCRValue: 1,
   entityType: "product",
   source: "products",
   visualization: "products",
+  firstYear: computed.alias('featureToggle.first_year'),
+  lastYear: computed.alias('featureToggle.last_year'),
 
   isSingleYearData: computed('dateExtent', function(){
     let dateExtent = this.get('dateExtent');
@@ -117,17 +121,11 @@ export default Ember.Controller.extend({
     var id = this.get("model.entity.id")
     var selected_products = {}
 
-    selected_products[id] = this.getPrimariesSecondaries2(parseInt(id))
-
     return selected_products
   }),
-  selectedProducts: computed('model.[]', function () {
-    return this.get("initialSelectedProducts");
-  }),
+  selectedProducts: computed.alias('locationsSelectionsService.selectedProducts'),
 
   searchFilter: observer('buildermodSearchService.search', function() {
-
-
 
     var data = this.get("model.metaData.products");
     var selected = this.get("selectedProducts");
@@ -142,9 +140,8 @@ export default Ember.Controller.extend({
 
 
       d3.selectAll(".tooltip_network").classed("d-none", true);
-      d3.selectAll(`.tooltip_${id_principal}_${elementId}`).classed("d-none", false);
 
-      this.set("selectedProducts", initialSelectedProducts);
+      this.set("selectedProducts", {});
       this.set('vistkNetworkService.updated', new Date());
     }
     else {
@@ -281,8 +278,7 @@ export default Ember.Controller.extend({
 
   dataNull: [],
 
-  firstYear: computed.alias('featureToggle.first_year'),
-  lastYear: computed.alias('featureToggle.last_year'),
+
   occupationsData: computed.alias('model.occupationsData'),
   modelData: computed.alias('model.entity'),
   exportDataLocations: computed('model.data', 'startDate', function (){
