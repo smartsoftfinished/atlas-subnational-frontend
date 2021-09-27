@@ -143,7 +143,7 @@ export default Ember.Component.extend(TableMap, {
       return numeral(number).divide(1000).format('0,0');
     } else if(_.include(decimalVars, key)){
       var result = numeral(number).format('0.00a')
-      return String(result).replace(",", "@").replace(".", "").replace("@", ".");
+      return result;
     } else if(key === 'employment'){
       return numeral(Math.ceil(number)).format('0,0');
     } else if(key === 'num_establishments' || key === 'export_num_plants'){
@@ -429,6 +429,8 @@ export default Ember.Component.extend(TableMap, {
   renderTable: computed('data.[]', 'id', 'updatedData', 'titles', 'tableMap', 'droppedColumns', 'columns', 'i18n.locale', 'source', 'search', 'startDate', function() {
 
     var data = this.get('data');
+    var title_data = this.get('title_data');
+    var source_data = this.get("source_data");
     var id_element = this.get('id');
     var updatedData = this.get('updatedData');
 
@@ -454,8 +456,11 @@ export default Ember.Component.extend(TableMap, {
     if(updatedData.length === 0){
       order = [[ 0, "desc" ]];
     }
+
     const decimalRegex = /^\d*(\.\d{1,2})$/g;
     const numericRegex = /(\.*){2,}/g;
+    const htmlRegex = /<[^>]*>/g;
+
     var table = $(id_element).DataTable({
       dom: 'Bfrtip',
       lengthChange: false,
@@ -471,6 +476,7 @@ export default Ember.Component.extend(TableMap, {
           exportOptions: {
             format: {
               body: function ( data, row, column, node ) {
+
                 let result = "";
                 if (decimalRegex.test(data)){
                   result = data;
@@ -479,7 +485,8 @@ export default Ember.Component.extend(TableMap, {
                 } else {
                   result = data;
                 }
-                console.log(result);
+
+                result = `${result}`.replace(/<[^>]*>/g, "");
 
                 return result;
               }
@@ -487,8 +494,13 @@ export default Ember.Component.extend(TableMap, {
           },
           filename: function() {
             var d = new Date();
+            if(title_data){
+              return title_data;
+            }
             return d.getDate()  + "-" + (d.getMonth()+1) + "-" + d.getFullYear() + " " + d.getHours() + "_" + d.getMinutes() + "_" + d.getSeconds();
           },
+          messageBottom: source_data,
+          title: title_data
         }
       ],
       language: language
